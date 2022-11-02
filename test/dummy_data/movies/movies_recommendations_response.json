@@ -1,0 +1,25 @@
+{
+  "page": 1,
+  "results": [
+    {
+      "adult": false,
+      "backdrop_path": "/backdrop_path.jpg",
+      "genre_ids": [
+        1
+      ],
+      "id": 1,
+      "original_language": "id",
+      "original_title": "Original Title",
+      "overview": "Overview",
+      "release_date": "2022-10-25",
+      "poster_path": "/poster_path.jpg",
+      "popularity": 8.5,
+      "title": "Title",
+      "video": false,
+      "vote_average": 8.5,
+      "vote_count": 1000
+    }
+  ],
+  "total_pages": 20,
+  "total_results": 1000
+}

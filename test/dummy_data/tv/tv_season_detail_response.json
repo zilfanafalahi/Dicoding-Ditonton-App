@@ -1,0 +1,39 @@
+{
+  "_id": "1",
+  "air_date": "2022-10-25",
+  "episodes": [
+    {
+      "air_date": "2022-10-25",
+      "episode_number": 1,
+      "crew": [
+        {
+          "department": "Department",
+          "job": "Job",
+          "credit_id": "Credit Id",
+          "adult": false,
+          "gender": 1,
+          "id": 1,
+          "known_for_department": "Known For Department",
+          "name": "Name",
+          "original_name": "Original Name",
+          "popularity": 8.5,
+          "profile_path": "/profile_path.jpg"
+        }
+      ],
+      "id": 1,
+      "name": "Name",
+      "overview": "Overview",
+      "production_code": "1",
+      "season_number": 1,
+      "still_path": "/still_path.jpg",
+      "vote_average": 8.5,
+      "vote_count": 1,
+      "runtime": 90
+    }
+  ],
+  "name": "Name",
+  "overview": "Overview",
+  "id": 1,
+  "poster_path": "/poster_path.jpg",
+  "season_number": 1
+}

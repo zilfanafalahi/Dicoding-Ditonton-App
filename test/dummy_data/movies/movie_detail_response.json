@@ -1,0 +1,54 @@
+{
+  "adult": false,
+  "backdrop_path": "/backdrop_path.jpg",
+  "belongs_to_collection": {
+    "id": 1,
+    "name": "Name",
+    "poster_path": "/poster_path.jpg",
+    "backdrop_path": "/backdrop_path.jpg"
+  },
+  "budget": 1000,
+  "genres": [
+    {
+      "id": 1,
+      "name": "Action"
+    }
+  ],
+  "homepage": "http://www.google.com",
+  "id": 1,
+  "imdb_id": "Imdb Id",
+  "original_language": "id",
+  "original_title": "Original Title",
+  "overview": "Overview",
+  "popularity": 8.5,
+  "poster_path": "/poster_path.jpg",
+  "production_companies": [
+    {
+      "id": 1,
+      "logo_path": "/logo_path.png",
+      "name": "Name",
+      "origin_country": "ID"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "ID",
+      "name": "Indonesia"
+    }
+  ],
+  "release_date": "2022-10-25",
+  "revenue": 1000,
+  "runtime": 90,
+  "spoken_languages": [
+    {
+      "iso_639_1": "id",
+      "name": "Indonesia"
+    }
+  ],
+  "status": "Status",
+  "tagline": "Tagline",
+  "title": "Title",
+  "video": false,
+  "vote_average": 8.5,
+  "vote_count": 1000
+}

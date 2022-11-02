@@ -1,0 +1,98 @@
+{
+  "backdrop_path": "/backdrop_path.jpg",
+  "created_by": [
+    {
+      "id": 1,
+      "credit_id": "Credit Id",
+      "name": "Name",
+      "gender": 1,
+      "profile_path": "/profile_path.jpg"
+    }
+  ],
+  "episode_run_time": [
+    90
+  ],
+  "first_air_date": "2022-10-25",
+  "genres": [
+    {
+      "id": 1,
+      "name": "Action"
+    }
+  ],
+  "homepage": "http://www.google.com",
+  "id": 1,
+  "in_production": false,
+  "languages": [
+    "id"
+  ],
+  "last_air_date": "2022-10-25",
+  "last_episode_to_air": {
+    "air_date": "2022-10-25",
+    "episode_number": 1,
+    "id": 1,
+    "name": "Name",
+    "overview": "Overview",
+    "production_code": "1",
+    "season_number": 1,
+    "still_path": "/still_path.jpg",
+    "vote_average": 8.5,
+    "vote_count": 1000
+  },
+  "name": "Name",
+  "next_episode_to_air": null,
+  "networks": [
+    {
+      "name": "Name",
+      "id": 1,
+      "logo_path": "/logo_path.png",
+      "origin_country": "ID"
+    }
+  ],
+  "number_of_episodes": 1,
+  "number_of_seasons": 1,
+  "origin_country": [
+    "ID"
+  ],
+  "original_language": "id",
+  "original_name": "Original Name",
+  "overview": "Overview",
+  "popularity": 8.5,
+  "poster_path": "/poster_path.jpg",
+  "production_companies": [
+    {
+      "id": 1,
+      "logo_path": "/logo_path.png",
+      "name": "Name",
+      "origin_country": "ID"
+    }
+  ],
+  "production_countries": [
+    {
+      "iso_3166_1": "ID",
+      "name": "Indonesia"
+    }
+  ],
+  "seasons": [
+    {
+      "air_date": "2022-10-25",
+      "episode_count": 1,
+      "id": 1,
+      "name": "Name",
+      "overview": "Overview",
+      "poster_path": "/poster_path.jpg",
+      "season_number": 1
+    }
+  ],
+  "spoken_languages": [
+    {
+      "english_name": "Indonesi",
+      "iso_639_1": "id",
+      "name": "Indonesi"
+    }
+  ],
+  "status": "Status",
+  "tagline": "Tagline",
+  "type": "Type",
+  "vote_average": 8.5,
+  "vote_count": 1000
+}
