@@ -1,15 +1,34 @@
+import 'dart:async';
+
 import 'package:dicoding_ditonton_app/common/constants.dart';
 import 'package:dicoding_ditonton_app/common/route_observer.dart';
 import 'package:dicoding_ditonton_app/on_generate_route.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/main_page.dart';
 import 'package:dicoding_ditonton_app/providers.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dicoding_ditonton_app/injection.dart' as di;
 
-void main() {
-  di.init();
-  runApp(const MyApp());
+Future<void> main() async {
+  runZonedGuarded<Future<void>>(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      await Firebase.initializeApp();
+
+      FlutterError.onError =
+          FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+      di.init();
+      runApp(const MyApp());
+    },
+    (error, stack) => FirebaseCrashlytics.instance.recordError(
+      error,
+      stack,
+      fatal: true,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
