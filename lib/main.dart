@@ -20,7 +20,7 @@ Future<void> main() async {
       FlutterError.onError =
           FirebaseCrashlytics.instance.recordFlutterFatalError;
 
-      di.init();
+      await di.init();
       runApp(const MyApp());
     },
     (error, stack) => FirebaseCrashlytics.instance.recordError(

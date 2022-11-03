@@ -17,11 +17,11 @@ void main() {
   const baseUrl = 'https://api.themoviedb.org/3';
 
   late TvRemoteDataSourceImpl dataSource;
-  late MockHttpClient mockHttpClient;
+  late MockIOClient mockIOClient;
 
   setUp(() {
-    mockHttpClient = MockHttpClient();
-    dataSource = TvRemoteDataSourceImpl(client: mockHttpClient);
+    mockIOClient = MockIOClient();
+    dataSource = TvRemoteDataSourceImpl(ioClient: mockIOClient);
   });
 
   group('Get On The Air Tv', () {
@@ -33,7 +33,7 @@ void main() {
 
     test('should return list of Tv Model when the response code is 200',
         () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/on_the_air?$apiKey')))
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/on_the_air?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
           readJson('dummy_data/tv/tv_on_the_air.json'),
@@ -49,7 +49,7 @@ void main() {
     test(
         'should throw a ServerException when the response code is 404 or other',
         () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/on_the_air?$apiKey')))
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/on_the_air?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
           'Not Found',
@@ -72,7 +72,7 @@ void main() {
 
     test('should return list of movies when response is success (200)',
         () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/popular?$apiKey')))
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/popular?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
           readJson('dummy_data/tv/tv_popular.json'),
@@ -88,7 +88,7 @@ void main() {
     test(
         'should throw a ServerException when the response code is 404 or other',
         () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/popular?$apiKey')))
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/popular?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
           'Not Found',
@@ -110,7 +110,7 @@ void main() {
     )).results;
 
     test('should return list of movies when response code is 200 ', () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/top_rated?$apiKey')))
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/top_rated?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
           readJson('dummy_data/tv/tv_top_rated_playing.json'),
@@ -125,7 +125,7 @@ void main() {
 
     test('should throw ServerException when response code is other than 200',
         () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/top_rated?$apiKey')))
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/top_rated?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
           'Not Found',
@@ -150,7 +150,7 @@ void main() {
     );
 
     test('should return tv detail when the response code is 200', () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/$id?$apiKey'))).thenAnswer(
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/$id?$apiKey'))).thenAnswer(
         (_) async => http.Response(
           readJson('dummy_data/tv/tv_detail_response.json'),
           200,
@@ -164,7 +164,7 @@ void main() {
 
     test('should throw Server Exception when the response code is 404 or other',
         () async {
-      when(mockHttpClient.get(Uri.parse('$baseUrl/tv/$id?$apiKey'))).thenAnswer(
+      when(mockIOClient.get(Uri.parse('$baseUrl/tv/$id?$apiKey'))).thenAnswer(
         (_) async => http.Response(
           'Not Found',
           404,
@@ -190,7 +190,7 @@ void main() {
 
     test('should return list of Tv Model when the response code is 200',
         () async {
-      when(mockHttpClient
+      when(mockIOClient
               .get(Uri.parse('$baseUrl/tv/$id/recommendations?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
@@ -206,7 +206,7 @@ void main() {
 
     test('should throw Server Exception when the response code is 404 or other',
         () async {
-      when(mockHttpClient
+      when(mockIOClient
               .get(Uri.parse('$baseUrl/tv/$id/recommendations?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
@@ -233,7 +233,7 @@ void main() {
     String query = 'One Piece';
 
     test('should return list of tv when response code is 200', () async {
-      when(mockHttpClient
+      when(mockIOClient
               .get(Uri.parse('$baseUrl/search/tv?$apiKey&query=$query')))
           .thenAnswer(
         (_) async => http.Response(
@@ -249,7 +249,7 @@ void main() {
 
     test('should throw ServerException when response code is other than 200',
         () async {
-      when(mockHttpClient
+      when(mockIOClient
               .get(Uri.parse('$baseUrl/search/tv?$apiKey&query=$query')))
           .thenAnswer(
         (_) async => http.Response(
@@ -278,7 +278,7 @@ void main() {
 
     test('should return list of Tv Model when the response code is 200',
         () async {
-      when(mockHttpClient
+      when(mockIOClient
               .get(Uri.parse('$baseUrl/tv/$id/season/$seasonNumber?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
@@ -294,7 +294,7 @@ void main() {
 
     test('should throw Server Exception when the response code is 404 or other',
         () async {
-      when(mockHttpClient
+      when(mockIOClient
               .get(Uri.parse('$baseUrl/tv/$id/season/$seasonNumber?$apiKey')))
           .thenAnswer(
         (_) async => http.Response(
