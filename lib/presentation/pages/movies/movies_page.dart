@@ -1,17 +1,18 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/movies/movies.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/now_playing_movies/now_playing_movies_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/popular_movies/popular_movies_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/top_rated_movies/top_rated_movies_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/movie_detail_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/popular_movies_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/search_delegate_movies_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/top_rated_movies_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/movies/movies_list_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_list_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
-import 'package:provider/provider.dart';
 
 class MoviesPage extends StatelessWidget {
   static const routeName = '/movies_page';
@@ -21,10 +22,12 @@ class MoviesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Future.microtask(
-        () => Provider.of<MoviesListProvider>(context, listen: false)
-          ..fetchNowPlayingMovies()
-          ..fetchPopularMovies()
-          ..fetchTopRatedMovies());
+      () {
+        context.read<NowPlayingMoviesBloc>().add(NowPlayingMoviesStarted());
+        context.read<PopularMoviesBloc>().add(PopularMoviesStarted());
+        context.read<TopRatedMoviesBloc>().add(TopRatedMoviesStarted());
+      },
+    );
 
     return Scaffold(
       appBar: _appBar(context),
@@ -92,22 +95,20 @@ class MoviesPage extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Consumer<MoviesListProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.nowPlayingState;
-
-              if (state == ResultState.loaded) {
+          child: BlocBuilder<NowPlayingMoviesBloc, NowPlayingMoviesState>(
+            builder: (context, state) {
+              if (state is NowPlayingMoviesLoaded) {
                 return _nowPlayingLoaded(
                   context,
-                  nowPlayingMovies: provider.nowPlayingMovies,
+                  nowPlayingMovies: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
-                return ErrorCustomWidget(message: provider.message);
+              if (state is NowPlayingMoviesError) {
+                return ErrorCustomWidget(message: state.message);
               }
 
-              if (state == ResultState.loading) {
+              if (state is NowPlayingMoviesLoading) {
                 return const LoadingCustomWidget();
               }
 
@@ -190,22 +191,20 @@ class MoviesPage extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Consumer<MoviesListProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.popularMoviesState;
-
-              if (state == ResultState.loaded) {
+          child: BlocBuilder<PopularMoviesBloc, PopularMoviesState>(
+            builder: (context, state) {
+              if (state is PopularMoviesLoaded) {
                 return _popularLoaded(
                   context,
-                  popularMovies: provider.popularMovies,
+                  popularMovies: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
-                return ErrorCustomWidget(message: provider.message);
+              if (state is PopularMoviesError) {
+                return ErrorCustomWidget(message: state.message);
               }
 
-              if (state == ResultState.loading) {
+              if (state is PopularMoviesLoading) {
                 return const LoadingCustomWidget();
               }
 
@@ -288,22 +287,20 @@ class MoviesPage extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Consumer<MoviesListProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.topRatedMoviesState;
-
-              if (state == ResultState.loaded) {
+          child: BlocBuilder<TopRatedMoviesBloc, TopRatedMoviesState>(
+            builder: (context, state) {
+              if (state is TopRatedMoviesLoaded) {
                 return _topRatedLoaded(
                   context,
-                  topRatedMovies: provider.topRatedMovies,
+                  topRatedMovies: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
-                return ErrorCustomWidget(message: provider.message);
+              if (state is TopRatedMoviesError) {
+                return ErrorCustomWidget(message: state.message);
               }
 
-              if (state == ResultState.loading) {
+              if (state is TopRatedMoviesLoading) {
                 return const LoadingCustomWidget();
               }
 

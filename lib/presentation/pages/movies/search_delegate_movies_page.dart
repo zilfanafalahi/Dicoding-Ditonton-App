@@ -1,14 +1,14 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/movies/movies.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/search_movies/search_movies_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/movie_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/movies/movies_search_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_grid_widget.dart';
+import 'package:dicoding_ditonton_app/presentation/widgets/data_not_available_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
-import 'package:provider/provider.dart';
 
 class SearchDelegateMoviesPage extends SearchDelegate<String> {
   SearchDelegateMoviesPage({
@@ -113,21 +113,28 @@ class SearchDelegateMoviesPage extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    Future.microtask(() =>
-        Provider.of<MoviesSearchProvider>(context, listen: false)
-            .fetchMovieSearch(query));
+    Future.microtask(
+      () => context
+          .read<SearchMoviesBloc>()
+          .add(SearchMoviesStarted(query: query)),
+    );
 
-    return Consumer<MoviesSearchProvider>(
-      builder: (context, provider, widget) {
-        if (provider.state == ResultState.loaded) {
-          return _results(context);
+    return BlocBuilder<SearchMoviesBloc, SearchMoviesState>(
+      builder: (context, state) {
+        if (state is SearchMoviesLoaded) {
+          return state.result.isNotEmpty
+              ? _searchLoaded(
+                  context,
+                  searchResultMovies: state.result,
+                )
+              : const DataNotAvailableWidet();
         }
 
-        if (provider.state == ResultState.error) {
-          return ErrorCustomWidget(message: provider.message);
+        if (state is SearchMoviesError) {
+          return ErrorCustomWidget(message: state.message);
         }
 
-        if (provider.state == ResultState.loading) {
+        if (state is SearchMoviesLoading) {
           return const LoadingCustomWidget();
         }
 
@@ -152,31 +159,6 @@ class SearchDelegateMoviesPage extends SearchDelegate<String> {
           ),
         )
       ];
-
-  Widget _results(BuildContext context) {
-    return Consumer<MoviesSearchProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.state;
-
-        if (state == ResultState.loaded) {
-          return _searchLoaded(
-            context,
-            searchResultMovies: provider.searchResultMovies,
-          );
-        }
-
-        if (state == ResultState.error) {
-          return ErrorCustomWidget(message: provider.message);
-        }
-
-        if (state == ResultState.loading) {
-          return const LoadingCustomWidget();
-        }
-
-        return const SizedBox();
-      },
-    );
-  }
 
   Widget _searchLoaded(
     BuildContext context, {

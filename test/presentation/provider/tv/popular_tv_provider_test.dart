@@ -19,7 +19,7 @@ void main() {
   setUp(() {
     listenerCallCount = 0;
     mockGetPopularTv = MockGetPopularTv();
-    notifier = PopularTvProvider(mockGetPopularTv)
+    notifier = PopularTvProvider(getPopularTv: mockGetPopularTv)
       ..addListener(() {
         listenerCallCount++;
       });

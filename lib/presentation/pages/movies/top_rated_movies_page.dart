@@ -1,13 +1,12 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/movies/movies.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/top_rated_movies/top_rated_movies_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/movie_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/movies/top_rated_movies_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_grid_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TopRatedMoviesPage extends StatelessWidget {
   static const routeName = '/top_rated_movies_page';
@@ -16,9 +15,9 @@ class TopRatedMoviesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() =>
-        Provider.of<TopRatedMoviesProvider>(context, listen: false)
-            .fetchTopRatedMovies());
+    Future.microtask(
+      () => context.read<TopRatedMoviesBloc>().add(TopRatedMoviesStarted()),
+    );
 
     return Scaffold(
       appBar: _appBar(context),
@@ -40,25 +39,23 @@ class TopRatedMoviesPage extends StatelessWidget {
   }
 
   Widget _body(BuildContext context) {
-    return Consumer<TopRatedMoviesProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.state;
-
-        if (state == ResultState.loaded) {
+    return BlocBuilder<TopRatedMoviesBloc, TopRatedMoviesState>(
+      builder: (context, state) {
+        if (state is TopRatedMoviesLoaded) {
           return _topRatedLoaded(
             context,
-            movies: provider.movies,
+            movies: state.result,
           );
         }
 
-        if (state == ResultState.error) {
+        if (state is TopRatedMoviesError) {
           return ErrorCustomWidget(
             key: const Key('error_message'),
-            message: provider.message,
+            message: state.message,
           );
         }
 
-        if (state == ResultState.loading) {
+        if (state is TopRatedMoviesLoading) {
           return const LoadingCustomWidget();
         }
 

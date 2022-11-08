@@ -1,13 +1,12 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/movies/movies.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/popular_movies/popular_movies_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/movie_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/movies/popular_movies_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_grid_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PopularMoviesPage extends StatelessWidget {
   static const routeName = '/popular_movies_page';
@@ -16,9 +15,9 @@ class PopularMoviesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() =>
-        Provider.of<PopularMoviesProvider>(context, listen: false)
-            .fetchPopularMovies());
+    Future.microtask(
+      () => context.read<PopularMoviesBloc>().add(PopularMoviesStarted()),
+    );
 
     return Scaffold(
       appBar: _appBar(context),
@@ -40,25 +39,22 @@ class PopularMoviesPage extends StatelessWidget {
   }
 
   Widget _body(BuildContext context) {
-    return Consumer<PopularMoviesProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.state;
-
-        if (state == ResultState.loaded) {
+    return BlocBuilder<PopularMoviesBloc, PopularMoviesState>(
+      builder: (context, state) {
+        if (state is PopularMoviesLoaded) {
+          final result = state.result;
           return _popularLoaded(
             context,
-            movies: provider.movies,
+            movies: result,
           );
         }
 
-        if (state == ResultState.error) {
-          return ErrorCustomWidget(
-            key: const Key('error_message'),
-            message: provider.message,
-          );
+        if (state is PopularMoviesError) {
+          final message = state.message;
+          return ErrorCustomWidget(message: message);
         }
 
-        if (state == ResultState.loading) {
+        if (state is PopularMoviesLoading) {
           return const LoadingCustomWidget();
         }
 

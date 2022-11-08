@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 class PopularMoviesProvider extends ChangeNotifier {
   final GetPopularMovies getPopularMovies;
 
-  PopularMoviesProvider(this.getPopularMovies);
+  PopularMoviesProvider({required this.getPopularMovies});
 
   ResultState _state = ResultState.empty;
   ResultState get state => _state;

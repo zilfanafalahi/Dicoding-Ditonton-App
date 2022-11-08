@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 class PopularTvProvider extends ChangeNotifier {
   final GetPopularTv getPopularTv;
 
-  PopularTvProvider(this.getPopularTv);
+  PopularTvProvider({required this.getPopularTv});
 
   ResultState _state = ResultState.empty;
   ResultState get state => _state;

@@ -1,12 +1,11 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/tv/tv_season_detail.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/tv/tv_season_detail_provider.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/season_detail_tv/season_detail_tv_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_season_detail_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TvSeasonDetailPageArgs {
   final String name;
@@ -32,9 +31,12 @@ class TvSeasonDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() =>
-        Provider.of<TvSeasonDetailProvider>(context, listen: false)
-            .fetchTvSeasonDetail(args.id, args.seasonNumber));
+    Future.microtask(
+      () => context.read<SeasonDetailTvBloc>().add(SeasonDetailTvStarted(
+            id: args.id,
+            seasonNumber: args.seasonNumber,
+          )),
+    );
 
     return Scaffold(
       appBar: _appBar(context),
@@ -56,25 +58,23 @@ class TvSeasonDetailPage extends StatelessWidget {
   }
 
   Widget _body(BuildContext context) {
-    return Consumer<TvSeasonDetailProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.tvSeasonDetailState;
-
-        if (state == ResultState.loaded) {
+    return BlocBuilder<SeasonDetailTvBloc, SeasonDetailTvState>(
+      builder: (context, state) {
+        if (state is SeasonDetailTvLoaded) {
           return _tvSeasonDetailLoaded(
             context,
-            tvSeasonDetail: provider.tvSeasonDetail,
+            tvSeasonDetail: state.result,
           );
         }
 
-        if (state == ResultState.error) {
+        if (state is SeasonDetailTvError) {
           return ErrorCustomWidget(
             key: const Key('error_message'),
-            message: provider.message,
+            message: state.message,
           );
         }
 
-        if (state == ResultState.loading) {
+        if (state is SeasonDetailTvLoading) {
           return const LoadingCustomWidget();
         }
 

@@ -1,19 +1,18 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/common/route_observer.dart';
 import 'package:dicoding_ditonton_app/domain/entities/movies/movies.dart';
 import 'package:dicoding_ditonton_app/domain/entities/tv/tv.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/watchlist_movies/watchlist_movies_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/watchlist_tv/watchlist_tv_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/movie_detail_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/movies/watchlist_movies_provider.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/tv/watchlist_tv_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_grid_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/data_not_available_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
-import 'package:provider/provider.dart';
 
 class WatchlistPage extends StatefulWidget {
   static const routeName = '/watchlist_page';
@@ -33,10 +32,8 @@ class _WatchlistPageState extends State<WatchlistPage>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     Future.microtask(() {
-      Provider.of<WatchlistMoviesProvider>(context, listen: false)
-          .fetchWatchlistMovies();
-      Provider.of<WatchlistTvProvider>(context, listen: false)
-          .fetchWatchlistTv();
+      context.read<WatchlistMoviesBloc>().add(WatchlistMoviesStarted());
+      context.read<WatchlistTvBloc>().add(WatchlistTvStarted());
     });
   }
 
@@ -54,9 +51,8 @@ class _WatchlistPageState extends State<WatchlistPage>
 
   @override
   void didPopNext() {
-    Provider.of<WatchlistMoviesProvider>(context, listen: false)
-        .fetchWatchlistMovies();
-    Provider.of<WatchlistTvProvider>(context, listen: false).fetchWatchlistTv();
+    context.read<WatchlistMoviesBloc>().add(WatchlistMoviesStarted());
+    context.read<WatchlistTvBloc>().add(WatchlistTvStarted());
   }
 
   @override
@@ -99,25 +95,23 @@ class _WatchlistPageState extends State<WatchlistPage>
   }
 
   Widget _bodyMovies(BuildContext context) {
-    return Consumer<WatchlistMoviesProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.watchlistState;
-
-        if (state == ResultState.loaded) {
+    return BlocBuilder<WatchlistMoviesBloc, WatchlistMoviesState>(
+      builder: (context, state) {
+        if (state is WatchlistMoviesLoaded) {
           return _loadedMovies(
             context,
-            watchlistMovies: provider.watchlistMovies,
+            watchlistMovies: state.result,
           );
         }
 
-        if (state == ResultState.error) {
+        if (state is WatchlistMoviesError) {
           return ErrorCustomWidget(
             key: const Key('error_message'),
-            message: provider.message,
+            message: state.message,
           );
         }
 
-        if (state == ResultState.loading) {
+        if (state is WatchlistMoviesLoading) {
           return const LoadingCustomWidget();
         }
 
@@ -161,25 +155,23 @@ class _WatchlistPageState extends State<WatchlistPage>
   }
 
   Widget _bodyTv(BuildContext context) {
-    return Consumer<WatchlistTvProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.watchlistState;
-
-        if (state == ResultState.loaded) {
+    return BlocBuilder<WatchlistTvBloc, WatchlistTvState>(
+      builder: (context, state) {
+        if (state is WatchlistTvLoaded) {
           return _loadedTv(
             context,
-            watchlistTv: provider.watchlistTv,
+            watchlistTv: state.result,
           );
         }
 
-        if (state == ResultState.error) {
+        if (state is WatchlistTvError) {
           return ErrorCustomWidget(
             key: const Key('error_message'),
-            message: provider.message,
+            message: state.message,
           );
         }
 
-        if (state == ResultState.loading) {
+        if (state is WatchlistTvLoading) {
           return const LoadingCustomWidget();
         }
 

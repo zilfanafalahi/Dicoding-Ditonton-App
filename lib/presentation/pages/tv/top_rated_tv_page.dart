@@ -1,13 +1,12 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/tv/tv.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/top_rated_tv/top_rated_tv_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/tv/top_rated_tv_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_grid_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TopRatedTvPage extends StatelessWidget {
   static const routeName = '/top_rated_tv_page';
@@ -16,9 +15,9 @@ class TopRatedTvPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() =>
-        Provider.of<TopRatedTvProvider>(context, listen: false)
-            .fetchTopRatedTv());
+    Future.microtask(
+      () => context.read<TopRatedTvBloc>().add(TopRatedTvStarted()),
+    );
 
     return Scaffold(
       appBar: _appBar(context),
@@ -40,25 +39,23 @@ class TopRatedTvPage extends StatelessWidget {
   }
 
   Widget _body(BuildContext context) {
-    return Consumer<TopRatedTvProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.state;
-
-        if (state == ResultState.loaded) {
+    return BlocBuilder<TopRatedTvBloc, TopRatedTvState>(
+      builder: (context, state) {
+        if (state is TopRatedTvLoaded) {
           return _topRatedLoaded(
             context,
-            tv: provider.tv,
+            tv: state.result,
           );
         }
 
-        if (state == ResultState.error) {
+        if (state is TopRatedTvError) {
           return ErrorCustomWidget(
             key: const Key('error_message'),
-            message: provider.message,
+            message: state.message,
           );
         }
 
-        if (state == ResultState.loading) {
+        if (state is TopRatedTvLoading) {
           return const LoadingCustomWidget();
         }
 

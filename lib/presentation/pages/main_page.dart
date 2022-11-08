@@ -1,12 +1,12 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/bottom_navigation/bottom_navigation_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/about_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/movies/movies_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/watchlist_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/bottom_navigation_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
-import 'package:provider/provider.dart';
 
 class MainPage extends StatelessWidget {
   static const routeName = '/main_page';
@@ -15,18 +15,24 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    int page = (context.watch<BottomNavigationBloc>().state
+            is BottomNavigationPage)
+        ? (context.read<BottomNavigationBloc>().state as BottomNavigationPage)
+            .page
+        : 0;
+
     return Scaffold(
       backgroundColor: kWhiteColor,
-      body: _buildBody(context),
-      bottomNavigationBar: _bottomNavBar(context),
+      body: _buildBody(context, page: page),
+      bottomNavigationBar: _bottomNavBar(context, page: page),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
-    BottomNavigationProvider provider =
-        Provider.of<BottomNavigationProvider>(context);
-
-    switch (provider.page) {
+  Widget _buildBody(
+    BuildContext context, {
+    required int page,
+  }) {
+    switch (page) {
       case 0:
         return const MoviesPage();
       case 1:
@@ -40,7 +46,10 @@ class MainPage extends StatelessWidget {
     }
   }
 
-  Widget _bottomNavBar(BuildContext context) {
+  Widget _bottomNavBar(
+    BuildContext context, {
+    required int page,
+  }) {
     return Container(
       decoration: const BoxDecoration(
         color: kWhiteColor,
@@ -62,44 +71,44 @@ class MainPage extends StatelessWidget {
             context,
             iconData: IconlyLight.ticket,
             title: "Movies",
-            isActive: context.read<BottomNavigationProvider>().page == 0
-                ? true
-                : false,
+            isActive: page == 0 ? true : false,
             onTap: () {
-              context.read<BottomNavigationProvider>().setPage(0);
+              context
+                  .read<BottomNavigationBloc>()
+                  .add(const BottomNavigationSetPage(page: 0));
             },
           ),
           _bottomNavBarItem(
             context,
             iconData: IconlyLight.play,
             title: "TV Shows",
-            isActive: context.read<BottomNavigationProvider>().page == 1
-                ? true
-                : false,
+            isActive: page == 1 ? true : false,
             onTap: () {
-              context.read<BottomNavigationProvider>().setPage(1);
+              context
+                  .read<BottomNavigationBloc>()
+                  .add(const BottomNavigationSetPage(page: 1));
             },
           ),
           _bottomNavBarItem(
             context,
             iconData: IconlyLight.bookmark,
             title: "Watchlist",
-            isActive: context.read<BottomNavigationProvider>().page == 2
-                ? true
-                : false,
+            isActive: page == 2 ? true : false,
             onTap: () {
-              context.read<BottomNavigationProvider>().setPage(2);
+              context
+                  .read<BottomNavigationBloc>()
+                  .add(const BottomNavigationSetPage(page: 2));
             },
           ),
           _bottomNavBarItem(
             context,
             iconData: IconlyLight.info_square,
             title: "About",
-            isActive: context.read<BottomNavigationProvider>().page == 3
-                ? true
-                : false,
+            isActive: page == 3 ? true : false,
             onTap: () {
-              context.read<BottomNavigationProvider>().setPage(3);
+              context
+                  .read<BottomNavigationBloc>()
+                  .add(const BottomNavigationSetPage(page: 3));
             },
           ),
         ],

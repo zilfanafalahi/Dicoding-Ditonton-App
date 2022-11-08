@@ -1,17 +1,18 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/tv/tv.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/on_the_air_tv/on_the_air_tv_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/popular_tv/popular_tv_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/top_rated_tv/top_rated_tv_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/popular_tv_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/search_delegate_tv_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/top_rated_tv_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/tv/tv_list_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_list_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
-import 'package:provider/provider.dart';
 
 class TvPage extends StatelessWidget {
   static const routeName = '/tv_page';
@@ -20,10 +21,13 @@ class TvPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() => Provider.of<TvListProvider>(context, listen: false)
-      ..fetchOnTheAirTv()
-      ..fetchPopularTv()
-      ..fetchTopRatedTv());
+    Future.microtask(
+      () {
+        context.read<OnTheAirTvBloc>().add(OnTheAirTvStarted());
+        context.read<PopularTvBloc>().add(PopularTvStarted());
+        context.read<TopRatedTvBloc>().add(TopRatedTvStarted());
+      },
+    );
 
     return Scaffold(
       appBar: _appBar(context),
@@ -91,24 +95,22 @@ class TvPage extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Consumer<TvListProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.onTheAirState;
-
-              if (state == ResultState.loaded) {
+          child: BlocBuilder<OnTheAirTvBloc, OnTheAirTvState>(
+            builder: (context, state) {
+              if (state is OnTheAirTvLoaded) {
                 return _onTheAirLoaded(
                   context,
-                  onTheAirTv: provider.onTheAirTv,
+                  onTheAirTv: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
+              if (state is OnTheAirTvError) {
                 return ErrorCustomWidget(
-                  message: provider.message,
+                  message: state.message,
                 );
               }
 
-              if (state == ResultState.loading) {
+              if (state is OnTheAirTvLoading) {
                 return const LoadingCustomWidget();
               }
 
@@ -191,24 +193,22 @@ class TvPage extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Consumer<TvListProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.popularTvState;
-
-              if (state == ResultState.loaded) {
+          child: BlocBuilder<PopularTvBloc, PopularTvState>(
+            builder: (context, state) {
+              if (state is PopularTvLoaded) {
                 return _popularLoaded(
                   context,
-                  popularTv: provider.popularTv,
+                  popularTv: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
+              if (state is PopularTvError) {
                 return ErrorCustomWidget(
-                  message: provider.message,
+                  message: state.message,
                 );
               }
 
-              if (state == ResultState.loading) {
+              if (state is PopularTvLoading) {
                 return const LoadingCustomWidget();
               }
 
@@ -291,24 +291,22 @@ class TvPage extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: Consumer<TvListProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.topRatedTvState;
-
-              if (state == ResultState.loaded) {
+          child: BlocBuilder<TopRatedTvBloc, TopRatedTvState>(
+            builder: (context, state) {
+              if (state is TopRatedTvLoaded) {
                 return _topRatedLoaded(
                   context,
-                  topRatedTv: provider.topRatedTv,
+                  topRatedTv: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
+              if (state is TopRatedTvError) {
                 return ErrorCustomWidget(
-                  message: provider.message,
+                  message: state.message,
                 );
               }
 
-              if (state == ResultState.loading) {
+              if (state is TopRatedTvLoading) {
                 return const LoadingCustomWidget();
               }
 

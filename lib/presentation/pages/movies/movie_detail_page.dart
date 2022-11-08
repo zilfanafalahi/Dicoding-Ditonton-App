@@ -1,18 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/common/show_duration.dart';
 import 'package:dicoding_ditonton_app/domain/entities/movies/movies.dart';
 import 'package:dicoding_ditonton_app/domain/entities/movies/movies_detail.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/movies/movies_detail_provider.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/detail_movies/detail_movies_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/recommendation_movies/recommendation_movies_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/watchlist_status_movies/watchlist_status_movies_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_recommendation_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/data_not_available_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:iconly/iconly.dart';
-import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 
 class MovieDetailPage extends StatelessWidget {
@@ -27,33 +28,38 @@ class MovieDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() {
-      Provider.of<MoviesDetailProvider>(context, listen: false)
-          .fetchMovieDetail(id);
-      Provider.of<MoviesDetailProvider>(context, listen: false)
-          .loadWatchlistStatusMovie(id);
-    });
+    Future.microtask(
+      () {
+        context.read<DetailMoviesBloc>().add(
+              DetailMoviesStarted(id: id),
+            );
+        context.read<RecommendationMoviesBloc>().add(
+              RecommendationMoviesStarted(id: id),
+            );
+        context.read<WatchlistStatusMoviesBloc>().add(
+              WatchlistStatusMovieStarted(id: id),
+            );
+      },
+    );
 
     return Scaffold(
-      body: Consumer<MoviesDetailProvider>(
-        builder: (context, provider, widget) {
-          final state = provider.movieState;
-
-          if (state == ResultState.loaded) {
+      body: BlocBuilder<DetailMoviesBloc, DetailMoviesState>(
+        builder: (context, state) {
+          if (state is DetailMoviesLoaded) {
             return _moviesDetailLoaded(
               context,
-              movie: provider.movie,
+              movie: state.result,
             );
           }
 
-          if (state == ResultState.error) {
+          if (state is DetailMoviesError) {
             return ErrorCustomWidget(
               key: const Key('error_message'),
-              message: provider.message,
+              message: state.message,
             );
           }
 
-          if (state == ResultState.loading) {
+          if (state is DetailMoviesLoading) {
             return const LoadingCustomWidget();
           }
 
@@ -247,7 +253,7 @@ class MovieDetailPage extends StatelessWidget {
           ),
         ),
         _leading(context),
-        _action(),
+        _action(context, detailMovies: movie),
       ],
     );
   }
@@ -271,24 +277,22 @@ class MovieDetailPage extends StatelessWidget {
           const SizedBox(
             height: 8,
           ),
-          Consumer<MoviesDetailProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.movieRecommendationState;
-
-              if (state == ResultState.loaded) {
+          BlocBuilder<RecommendationMoviesBloc, RecommendationMoviesState>(
+            builder: (context, state) {
+              if (state is RecommendationMoviesLoaded) {
                 return _recommendationLoaded(
                   context,
-                  movieRecommendations: provider.movieRecommendations,
+                  movieRecommendations: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
+              if (state is RecommendationMoviesError) {
                 return ErrorCustomWidget(
                     key: const Key('error_message_recommendation'),
-                    message: provider.message);
+                    message: state.message);
               }
 
-              if (state == ResultState.loading) {
+              if (state is RecommendationMoviesLoading) {
                 return const LoadingCustomWidget();
               }
 
@@ -362,155 +366,132 @@ class MovieDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _action() {
-    return Positioned(
-      top: 32,
-      right: 16,
-      child: Consumer<MoviesDetailProvider>(
-        builder: (context, provider, widget) {
-          return provider.isAddedToWatchlist
-              ? InkWell(
-                  onTap: () async {
-                    await Provider.of<MoviesDetailProvider>(
-                      context,
-                      listen: false,
-                    ).removeFromWatchlistMovie(provider.movie).then((value) {
-                      final message = Provider.of<MoviesDetailProvider>(
-                        context,
-                        listen: false,
-                      ).watchlistMessage;
+  Widget _action(
+    BuildContext context, {
+    required MoviesDetail detailMovies,
+  }) {
+    bool isSave = (context.watch<WatchlistStatusMoviesBloc>().state
+            is IsSaveWatchlistStatusMovies)
+        ? (context.read<WatchlistStatusMoviesBloc>().state
+                as IsSaveWatchlistStatusMovies)
+            .isSave
+        : false;
 
-                      if (message ==
-                              MoviesDetailProvider.watchlistAddSuccessMessage ||
-                          message ==
-                              MoviesDetailProvider
-                                  .watchlistRemoveSuccessMessage) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: kPrimaryColor,
-                            content: Text(
-                              message,
-                              style: kTextTheme.caption!.apply(
-                                color: kWhiteColor,
-                              ),
-                            ),
-                          ),
-                        );
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              content: Text(
-                                "Failed",
-                                style: kTextTheme.caption!.apply(
-                                  color: kRedColor,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    }).catchError((error, stackTrace) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            content: Text(
-                              "Failed",
-                              style: kTextTheme.caption!.apply(
-                                color: kRedColor,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    });
-                  },
-                  child: ClipOval(
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      color: kWhiteColor,
-                      child: const Icon(
-                        IconlyBold.bookmark,
-                        color: kPrimaryColor,
-                      ),
-                    ),
+    return BlocListener<WatchlistStatusMoviesBloc, WatchlistStatusMoviesState>(
+      listener: (context, state) {
+        if (state is SaveWatchlistStatusMoviesMessage) {
+          final message = state.message;
+
+          if (message == WatchlistStatusMoviesBloc.watchlistAddSuccessMessage ||
+              message ==
+                  WatchlistStatusMoviesBloc.watchlistRemoveSuccessMessage) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: kPrimaryColor,
+                content: Text(
+                  message,
+                  style: kTextTheme.caption!.apply(
+                    color: kWhiteColor,
                   ),
-                )
-              : InkWell(
-                  key: const Key("inkwell_add_watchlist_key"),
-                  onTap: () async {
-                    await Provider.of<MoviesDetailProvider>(
-                      context,
-                      listen: false,
-                    ).addWatchlistMovie(provider.movie).then((value) {
-                      final message = Provider.of<MoviesDetailProvider>(
-                        context,
-                        listen: false,
-                      ).watchlistMessage;
-
-                      if (message ==
-                              MoviesDetailProvider.watchlistAddSuccessMessage ||
-                          message ==
-                              MoviesDetailProvider
-                                  .watchlistRemoveSuccessMessage) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: kPrimaryColor,
-                            content: Text(
-                              message,
-                              style: kTextTheme.caption!.apply(
-                                color: kWhiteColor,
-                              ),
-                            ),
-                          ),
-                        );
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              content: Text(
-                                "Failed",
-                                style: kTextTheme.caption!.apply(
-                                  color: kRedColor,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    }).catchError((error, stackTrace) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            content: Text(
-                              "Failed",
-                              style: kTextTheme.caption!.apply(
-                                color: kRedColor,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    });
-                  },
-                  child: ClipOval(
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      color: kWhiteColor,
-                      child: const Icon(
-                        IconlyLight.bookmark,
-                        color: kPrimaryColor,
-                      ),
+                ),
+              ),
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text(
+                    "Failed",
+                    style: kTextTheme.caption!.apply(
+                      color: kRedColor,
                     ),
                   ),
                 );
-        },
+              },
+            );
+          }
+        }
+
+        if (state is RemoveWatchlistStatusMoviesMessage) {
+          final message = state.message;
+
+          if (message == WatchlistStatusMoviesBloc.watchlistAddSuccessMessage ||
+              message ==
+                  WatchlistStatusMoviesBloc.watchlistRemoveSuccessMessage) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: kPrimaryColor,
+                content: Text(
+                  message,
+                  style: kTextTheme.caption!.apply(
+                    color: kWhiteColor,
+                  ),
+                ),
+              ),
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text(
+                    "Failed",
+                    style: kTextTheme.caption!.apply(
+                      color: kRedColor,
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        }
+      },
+      child: Positioned(
+        top: 32,
+        right: 16,
+        child: isSave
+            ? InkWell(
+                onTap: () {
+                  context.read<WatchlistStatusMoviesBloc>().add(
+                        RemoveWatchlistStatusMoviesStarted(
+                          detailMovies: detailMovies,
+                        ),
+                      );
+                },
+                child: ClipOval(
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    color: kWhiteColor,
+                    child: const Icon(
+                      IconlyBold.bookmark,
+                      color: kPrimaryColor,
+                    ),
+                  ),
+                ),
+              )
+            : InkWell(
+                key: const Key("inkwell_add_watchlist_key"),
+                onTap: () {
+                  context.read<WatchlistStatusMoviesBloc>().add(
+                        SaveWatchlistStatusMoviesStarted(
+                          detailMovies: detailMovies,
+                        ),
+                      );
+                },
+                child: ClipOval(
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    color: kWhiteColor,
+                    child: const Icon(
+                      IconlyLight.bookmark,
+                      color: kPrimaryColor,
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }

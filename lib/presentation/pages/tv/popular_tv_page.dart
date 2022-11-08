@@ -1,13 +1,12 @@
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/domain/entities/tv/tv.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/popular_tv/popular_tv_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/tv/popular_tv_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_grid_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PopularTvPage extends StatelessWidget {
   static const routeName = '/popular_tv_page';
@@ -16,9 +15,9 @@ class PopularTvPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() =>
-        Provider.of<PopularTvProvider>(context, listen: false)
-            .fetchPopularTv());
+    Future.microtask(
+      () => context.read<PopularTvBloc>().add(PopularTvStarted()),
+    );
 
     return Scaffold(
       appBar: _appBar(context),
@@ -40,25 +39,23 @@ class PopularTvPage extends StatelessWidget {
   }
 
   Widget _body(BuildContext context) {
-    return Consumer<PopularTvProvider>(
-      builder: (context, provider, widget) {
-        final state = provider.state;
-
-        if (state == ResultState.loaded) {
+    return BlocBuilder<PopularTvBloc, PopularTvState>(
+      builder: (context, state) {
+        if (state is PopularTvLoaded) {
           return _popularLoaded(
             context,
-            tv: provider.tv,
+            tv: state.result,
           );
         }
 
-        if (state == ResultState.error) {
+        if (state is PopularTvError) {
           return ErrorCustomWidget(
             key: const Key('error_message'),
-            message: provider.message,
+            message: state.message,
           );
         }
 
-        if (state == ResultState.loading) {
+        if (state is PopularTvLoading) {
           return const LoadingCustomWidget();
         }
 

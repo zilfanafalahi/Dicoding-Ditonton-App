@@ -1,20 +1,21 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/result_state.dart';
 import 'package:dicoding_ditonton_app/common/show_duration.dart';
 import 'package:dicoding_ditonton_app/domain/entities/tv/tv.dart';
 import 'package:dicoding_ditonton_app/domain/entities/tv/tv_detail.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/detail_tv/detail_tv_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/recommendation_tv/recommendation_tv_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/watchlist_status_tv/watchlist_status_tv_bloc.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_season_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/provider/tv/tv_detail_provider.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_recommendation_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/card_season_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/data_not_available_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
 import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:iconly/iconly.dart';
-import 'package:provider/provider.dart';
 import 'package:readmore/readmore.dart';
 
 class TvDetailPage extends StatelessWidget {
@@ -29,32 +30,38 @@ class TvDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Future.microtask(() {
-      Provider.of<TvDetailProvider>(context, listen: false).fetchTvDetail(id);
-      Provider.of<TvDetailProvider>(context, listen: false)
-          .loadWatchlistStatusTv(id);
-    });
+    Future.microtask(
+      () {
+        context.read<DetailTvBloc>().add(
+              DetailTvStarted(id: id),
+            );
+        context.read<RecommendationTvBloc>().add(
+              RecommendationTvStarted(id: id),
+            );
+        context.read<WatchlistStatusTvBloc>().add(
+              WatchlistStatusTvtarted(id: id),
+            );
+      },
+    );
 
     return Scaffold(
-      body: Consumer<TvDetailProvider>(
-        builder: (context, provider, widget) {
-          final state = provider.tvState;
-
-          if (state == ResultState.loaded) {
+      body: BlocBuilder<DetailTvBloc, DetailTvState>(
+        builder: (context, state) {
+          if (state is DetailTvLoaded) {
             return _tvDetailLoaded(
               context,
-              tvDetail: provider.tv,
+              detailTv: state.result,
             );
           }
 
-          if (state == ResultState.error) {
+          if (state is DetailTvError) {
             return ErrorCustomWidget(
               key: const Key('error_message'),
-              message: provider.message,
+              message: state.message,
             );
           }
 
-          if (state == ResultState.loading) {
+          if (state is DetailTvLoading) {
             return const LoadingCustomWidget();
           }
 
@@ -66,7 +73,7 @@ class TvDetailPage extends StatelessWidget {
 
   Widget _tvDetailLoaded(
     BuildContext context, {
-    required TvDetail tvDetail,
+    required TvDetail detailTv,
   }) {
     return Stack(
       children: [
@@ -77,13 +84,13 @@ class TvDetailPage extends StatelessWidget {
               Stack(
                 alignment: AlignmentDirectional.center,
                 children: [
-                  tvDetail.posterPath.isNotEmpty
+                  detailTv.posterPath.isNotEmpty
                       ? Container(
                           width: double.infinity,
                           height: 420,
                           color: kPrimaryColor,
                           child: CachedNetworkImage(
-                            imageUrl: "$baseImageUrl${tvDetail.posterPath}",
+                            imageUrl: "$baseImageUrl${detailTv.posterPath}",
                             placeholder: (context, url) {
                               return const Center(
                                 child: SizedBox(
@@ -140,7 +147,7 @@ class TvDetailPage extends StatelessWidget {
                     child: Column(
                       children: [
                         Text(
-                          tvDetail.firstAirDate.split("-")[0],
+                          detailTv.firstAirDate.split("-")[0],
                           style: kTextTheme.subtitle2!.apply(
                             color: kPrimaryColor,
                           ),
@@ -149,7 +156,7 @@ class TvDetailPage extends StatelessWidget {
                           height: 6,
                         ),
                         Text(
-                          tvDetail.name,
+                          detailTv.name,
                           style: kTextTheme.subtitle1!.apply(
                             color: kPrimaryColor,
                             fontWeightDelta: 2,
@@ -159,7 +166,7 @@ class TvDetailPage extends StatelessWidget {
                           height: 6,
                         ),
                         RatingBarIndicator(
-                          rating: tvDetail.voteAverage / 2,
+                          rating: detailTv.voteAverage / 2,
                           itemCount: 5,
                           itemBuilder: (context, index) => const Icon(
                             IconlyBold.star,
@@ -172,8 +179,8 @@ class TvDetailPage extends StatelessWidget {
                           height: 6,
                         ),
                         Text(
-                          showDuration(tvDetail.episodeRunTime.isNotEmpty
-                              ? tvDetail.episodeRunTime[0]
+                          showDuration(detailTv.episodeRunTime.isNotEmpty
+                              ? detailTv.episodeRunTime[0]
                               : 0),
                           style: kTextTheme.subtitle2!.apply(
                             color: kPrimaryColor,
@@ -192,7 +199,7 @@ class TvDetailPage extends StatelessWidget {
                     Wrap(
                       spacing: 4,
                       runSpacing: 4,
-                      children: tvDetail.genres.map((e) {
+                      children: detailTv.genres.map((e) {
                         return Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(4),
@@ -224,9 +231,9 @@ class TvDetailPage extends StatelessWidget {
                     const SizedBox(
                       height: 8,
                     ),
-                    tvDetail.overview.isNotEmpty
+                    detailTv.overview.isNotEmpty
                         ? ReadMoreText(
-                            tvDetail.overview,
+                            detailTv.overview,
                             trimLines: 2,
                             trimMode: TrimMode.Line,
                             trimCollapsedText: 'show more',
@@ -245,18 +252,21 @@ class TvDetailPage extends StatelessWidget {
                   ],
                 ),
               ),
-              _seasons(context),
+              _seasons(context, detailTv: detailTv),
               _recommendations(context),
             ],
           ),
         ),
         _leading(context),
-        _action(),
+        _action(context, detailTv: detailTv),
       ],
     );
   }
 
-  Widget _seasons(BuildContext context) {
+  Widget _seasons(
+    BuildContext context, {
+    required TvDetail detailTv,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -275,30 +285,9 @@ class TvDetailPage extends StatelessWidget {
           const SizedBox(
             height: 8,
           ),
-          Consumer<TvDetailProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.tvState;
-
-              if (state == ResultState.loaded) {
-                return _seasonLoaded(
-                  context,
-                  tvDetail: provider.tv,
-                );
-              }
-
-              if (state == ResultState.error) {
-                return ErrorCustomWidget(
-                  key: const Key('error_message'),
-                  message: provider.message,
-                );
-              }
-
-              if (state == ResultState.loading) {
-                return const LoadingCustomWidget();
-              }
-
-              return const SizedBox();
-            },
+          _seasonLoaded(
+            context,
+            detailTv: detailTv,
           ),
         ],
       ),
@@ -307,16 +296,16 @@ class TvDetailPage extends StatelessWidget {
 
   Widget _seasonLoaded(
     BuildContext context, {
-    required TvDetail tvDetail,
+    required TvDetail detailTv,
   }) {
-    return tvDetail.seasons.isNotEmpty
+    return detailTv.seasons.isNotEmpty
         ? SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: tvDetail.seasons.map((e) {
-                int index = tvDetail.seasons.indexOf(e);
-                int indexLength = tvDetail.seasons.length;
+              children: detailTv.seasons.map((e) {
+                int index = detailTv.seasons.indexOf(e);
+                int indexLength = detailTv.seasons.length;
 
                 return Padding(
                   padding: EdgeInsets.only(
@@ -368,24 +357,22 @@ class TvDetailPage extends StatelessWidget {
           const SizedBox(
             height: 8,
           ),
-          Consumer<TvDetailProvider>(
-            builder: (context, provider, widget) {
-              final state = provider.tvRecommendationState;
-
-              if (state == ResultState.loaded) {
+          BlocBuilder<RecommendationTvBloc, RecommendationTvState>(
+            builder: (context, state) {
+              if (state is RecommendationTvLoaded) {
                 return _recommendationLoaded(
                   context,
-                  tvRecommendations: provider.tvRecommendations,
+                  tvRecommendations: state.result,
                 );
               }
 
-              if (state == ResultState.error) {
+              if (state is RecommendationTvError) {
                 return ErrorCustomWidget(
-                  message: provider.message,
+                  message: state.message,
                 );
               }
 
-              if (state == ResultState.loading) {
+              if (state is RecommendationTvLoading) {
                 return const LoadingCustomWidget();
               }
 
@@ -459,153 +446,130 @@ class TvDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _action() {
-    return Positioned(
-      top: 32,
-      right: 16,
-      child: Consumer<TvDetailProvider>(
-        builder: (context, provider, widget) {
-          return provider.isAddedToWatchlist
-              ? InkWell(
-                  onTap: () async {
-                    await Provider.of<TvDetailProvider>(
-                      context,
-                      listen: false,
-                    ).removeFromWatchlistTv(provider.tv).then((value) {
-                      final message = Provider.of<TvDetailProvider>(
-                        context,
-                        listen: false,
-                      ).watchlistMessage;
+  Widget _action(
+    BuildContext context, {
+    required TvDetail detailTv,
+  }) {
+    bool isSave = (context.watch<WatchlistStatusTvBloc>().state
+            is IsSaveWatchlistStatusTv)
+        ? (context.read<WatchlistStatusTvBloc>().state
+                as IsSaveWatchlistStatusTv)
+            .isSave
+        : false;
 
-                      if (message ==
-                              TvDetailProvider.watchlistAddSuccessMessage ||
-                          message ==
-                              TvDetailProvider.watchlistRemoveSuccessMessage) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: kPrimaryColor,
-                            content: Text(
-                              message,
-                              style: kTextTheme.caption!.apply(
-                                color: kWhiteColor,
-                              ),
-                            ),
-                          ),
-                        );
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              content: Text(
-                                "Failed",
-                                style: kTextTheme.caption!.apply(
-                                  color: kRedColor,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    }).catchError((error, stackTrace) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            content: Text(
-                              "Failed",
-                              style: kTextTheme.caption!.apply(
-                                color: kRedColor,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    });
-                  },
-                  child: ClipOval(
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      color: kWhiteColor,
-                      child: const Icon(
-                        IconlyBold.bookmark,
-                        color: kPrimaryColor,
-                      ),
-                    ),
+    return BlocListener<WatchlistStatusTvBloc, WatchlistStatusTvState>(
+      listener: (context, state) {
+        if (state is SaveWatchlistStatusTvMessage) {
+          final message = state.message;
+
+          if (message == WatchlistStatusTvBloc.watchlistAddSuccessMessage ||
+              message == WatchlistStatusTvBloc.watchlistRemoveSuccessMessage) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: kPrimaryColor,
+                content: Text(
+                  message,
+                  style: kTextTheme.caption!.apply(
+                    color: kWhiteColor,
                   ),
-                )
-              : InkWell(
-                  key: const Key("inkwell_add_watchlist_key"),
-                  onTap: () async {
-                    await Provider.of<TvDetailProvider>(
-                      context,
-                      listen: false,
-                    ).addWatchlistTv(provider.tv).then((value) {
-                      final message = Provider.of<TvDetailProvider>(
-                        context,
-                        listen: false,
-                      ).watchlistMessage;
-
-                      if (message ==
-                              TvDetailProvider.watchlistAddSuccessMessage ||
-                          message ==
-                              TvDetailProvider.watchlistRemoveSuccessMessage) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: kPrimaryColor,
-                            content: Text(
-                              message,
-                              style: kTextTheme.caption!.apply(
-                                color: kWhiteColor,
-                              ),
-                            ),
-                          ),
-                        );
-                      } else {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return AlertDialog(
-                              content: Text(
-                                "Failed",
-                                style: kTextTheme.caption!.apply(
-                                  color: kRedColor,
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      }
-                    }).catchError((error, stackTrace) {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            content: Text(
-                              "Failed",
-                              style: kTextTheme.caption!.apply(
-                                color: kRedColor,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    });
-                  },
-                  child: ClipOval(
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      color: kWhiteColor,
-                      child: const Icon(
-                        IconlyLight.bookmark,
-                        color: kPrimaryColor,
-                      ),
+                ),
+              ),
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text(
+                    "Failed",
+                    style: kTextTheme.caption!.apply(
+                      color: kRedColor,
                     ),
                   ),
                 );
-        },
+              },
+            );
+          }
+        }
+
+        if (state is RemoveWatchlistStatusTvMessage) {
+          final message = state.message;
+
+          if (message == WatchlistStatusTvBloc.watchlistAddSuccessMessage ||
+              message == WatchlistStatusTvBloc.watchlistRemoveSuccessMessage) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: kPrimaryColor,
+                content: Text(
+                  message,
+                  style: kTextTheme.caption!.apply(
+                    color: kWhiteColor,
+                  ),
+                ),
+              ),
+            );
+          } else {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  content: Text(
+                    "Failed",
+                    style: kTextTheme.caption!.apply(
+                      color: kRedColor,
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+        }
+      },
+      child: Positioned(
+        top: 32,
+        right: 16,
+        child: isSave
+            ? InkWell(
+                onTap: () {
+                  context.read<WatchlistStatusTvBloc>().add(
+                        RemoveWatchlistStatusTvStarted(
+                          detailTv: detailTv,
+                        ),
+                      );
+                },
+                child: ClipOval(
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    color: kWhiteColor,
+                    child: const Icon(
+                      IconlyBold.bookmark,
+                      color: kPrimaryColor,
+                    ),
+                  ),
+                ),
+              )
+            : InkWell(
+                key: const Key("inkwell_add_watchlist_key"),
+                onTap: () {
+                  context.read<WatchlistStatusTvBloc>().add(
+                        SaveWatchlistStatusTvStarted(
+                          detailTv: detailTv,
+                        ),
+                      );
+                },
+                child: ClipOval(
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    color: kWhiteColor,
+                    child: const Icon(
+                      IconlyLight.bookmark,
+                      color: kPrimaryColor,
+                    ),
+                  ),
+                ),
+              ),
       ),
     );
   }
