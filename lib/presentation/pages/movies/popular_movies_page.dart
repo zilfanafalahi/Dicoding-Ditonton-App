@@ -51,7 +51,10 @@ class PopularMoviesPage extends StatelessWidget {
 
         if (state is PopularMoviesError) {
           final message = state.message;
-          return ErrorCustomWidget(message: message);
+          return ErrorCustomWidget(
+            key: const Key('error_message'),
+            message: message,
+          );
         }
 
         if (state is PopularMoviesLoading) {
