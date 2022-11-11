@@ -1,7 +1,5 @@
 import 'dart:async';
-
-import 'package:dicoding_ditonton_app/common/constants.dart';
-import 'package:dicoding_ditonton_app/common/route_observer.dart';
+import 'package:common/common.dart';
 import 'package:dicoding_ditonton_app/on_generate_route.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/main_page.dart';
 import 'package:dicoding_ditonton_app/blocs.dart';

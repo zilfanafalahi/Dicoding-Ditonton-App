@@ -1,16 +1,9 @@
-import 'package:dicoding_ditonton_app/presentation/pages/about_page.dart';
+import 'package:about/about_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/main_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/movies/movie_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/movies/movies_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/movies/popular_movies_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/movies/top_rated_movies_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/tv/popular_tv_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/tv/top_rated_tv_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_detail_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_page.dart';
-import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_season_detail_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/watchlist_page.dart';
 import 'package:flutter/material.dart';
+import 'package:movie/movie.dart';
+import 'package:tv/tv.dart';
 
 Route<dynamic>? Function(RouteSettings)? onGenerateRoute =
     (RouteSettings settings) {

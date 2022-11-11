@@ -31,6 +31,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  about:
+    path: about
+  common:
+    path: common
+  movie:
+    path: movie
+  tv:
+    path: tv
 
 
   # The following adds the Cupertino Icons font to your application.
