@@ -1,9 +1,18 @@
-import 'package:common/common.dart';
+import 'package:dicoding_ditonton_app/common/constants.dart';
+import 'package:dicoding_ditonton_app/common/route_observer.dart';
+import 'package:dicoding_ditonton_app/domain/entities/movies/movies.dart';
+import 'package:dicoding_ditonton_app/domain/entities/tv/tv.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/movies/watchlist_movies/watchlist_movies_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/bloc/tv/watchlist_tv/watchlist_tv_bloc.dart';
+import 'package:dicoding_ditonton_app/presentation/pages/movies/movie_detail_page.dart';
+import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_detail_page.dart';
+import 'package:dicoding_ditonton_app/presentation/widgets/card_grid_widget.dart';
+import 'package:dicoding_ditonton_app/presentation/widgets/data_not_available_widget.dart';
+import 'package:dicoding_ditonton_app/presentation/widgets/error_custom_widget.dart';
+import 'package:dicoding_ditonton_app/presentation/widgets/loading_custom_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
-import 'package:movie/movie.dart';
-import 'package:tv/tv.dart';
 
 class WatchlistPage extends StatefulWidget {
   static const routeName = '/watchlist_page';

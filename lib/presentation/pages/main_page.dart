@@ -1,12 +1,12 @@
-import 'package:common/common.dart';
+import 'package:dicoding_ditonton_app/common/constants.dart';
 import 'package:dicoding_ditonton_app/presentation/bloc/bottom_navigation/bottom_navigation_bloc.dart';
-import 'package:about/about_page.dart';
+import 'package:dicoding_ditonton_app/presentation/pages/about_page.dart';
+import 'package:dicoding_ditonton_app/presentation/pages/movies/movies_page.dart';
+import 'package:dicoding_ditonton_app/presentation/pages/tv/tv_page.dart';
 import 'package:dicoding_ditonton_app/presentation/pages/watchlist_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:iconly/iconly.dart';
-import 'package:movie/movie.dart';
-import 'package:tv/tv.dart';
 
 class MainPage extends StatelessWidget {
   static const routeName = '/main_page';
